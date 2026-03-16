@@ -1,10 +1,11 @@
-package router
+package router_test
 
 import (
 	"context"
 	"testing"
 
 	"openclaw-go/internal/protocol"
+	"openclaw-go/internal/router"
 )
 
 type mockSession struct{}
@@ -16,10 +17,10 @@ func (m *mockSession) Send(packet protocol.Packet) error {
 }
 
 func TestDispatch(t *testing.T) {
-	r := New()
+	r := router.New()
 
 	called := false
-	r.Register(1001, func(ctx context.Context, session Session, packet protocol.Packet) error {
+	r.Register(1001, func(ctx context.Context, session router.Session, packet protocol.Packet) error {
 		called = true
 		return nil
 	})
@@ -33,7 +34,7 @@ func TestDispatch(t *testing.T) {
 }
 
 func TestDispatchHandlerNotFound(t *testing.T) {
-	r := New()
+	r := router.New()
 
 	err := r.Dispatch(context.Background(), &mockSession{}, protocol.Packet{MsgID: 404})
 	if err == nil {
