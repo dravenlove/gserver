@@ -49,9 +49,13 @@ func (s *Server) Start(ctx context.Context) error {
 				s.logger.Printf("gateway stopped")
 				return nil
 			}
+			if errors.Is(err, net.ErrClosed) {
+				s.logger.Printf("gateway listener closed")
+				return nil
+			}
 			var netErr net.Error
-			if errors.As(err, &netErr) && netErr.Temporary() {
-				s.logger.Printf("accept temporary error: %v", err)
+			if errors.As(err, &netErr) && netErr.Timeout() {
+				s.logger.Printf("accept timeout error: %v", err)
 				continue
 			}
 			return err
