@@ -5,7 +5,8 @@
 - 网关层（TCP 连接管理、会话管理）
 - 协议层（统一帧协议编解码）
 - 协议路由层（按 `msg_id` 路由到业务处理器）
-- 示例业务（`ping` / `echo`）
+- MySQL 持久化（玩家角色信息）
+- 示例业务（`ping` / `echo` / `create character` / `get character`）
 
 ## 架构分层
 
@@ -22,6 +23,10 @@ internal/protocol/          # 协议：帧结构、JSON 序列化
 internal/router/            # 路由：msg_id -> handler
 internal/handlers/          # 示例业务处理器
 internal/messages/ids.go    # 消息号定义
+internal/player/            # 玩家领域模型与存储接口
+internal/storage/mysql/     # MySQL 存储实现
+scripts/mysql/init.sql      # MySQL 初始化脚本
+docker-compose.yml          # 本地 MySQL 容器
 ```
 
 ## 协议格式（TCP 二进制帧）
@@ -43,10 +48,26 @@ Body：
 +----------------+-------------+------------------+
 ```
 
-## 快速启动
+## 快速启动（MySQL + Server）
+
+### 1) 启动 MySQL
 
 ```bash
-go run ./cmd/server -addr :9000
+docker compose up -d mysql
+```
+
+默认数据库参数：
+
+- host: `127.0.0.1`
+- port: `3306`
+- database: `gserver`
+- user: `gserver`
+- password: `gserver`
+
+### 2) 启动服务端
+
+```bash
+go run ./cmd/server -addr :9000 -mysql-dsn "gserver:gserver@tcp(127.0.0.1:3306)/gserver?charset=utf8mb4&parseTime=true&loc=Local"
 ```
 
 默认监听 `:9000`。
@@ -57,6 +78,10 @@ go run ./cmd/server -addr :9000
 - `1002`：PingResp
 - `1003`：EchoReq
 - `1004`：EchoResp
+- `2001`：CreateCharacterReq
+- `2002`：CreateCharacterResp
+- `2003`：GetCharacterReq
+- `2004`：GetCharacterResp
 
 ## 扩展建议
 

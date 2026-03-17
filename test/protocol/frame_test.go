@@ -1,23 +1,25 @@
-package protocol
+package protocol_test
 
 import (
 	"bytes"
 	"errors"
 	"testing"
+
+	"openclaw-go/internal/protocol"
 )
 
 func TestEncodeDecodePacket(t *testing.T) {
-	origin := Packet{
+	origin := protocol.Packet{
 		MsgID:   1001,
 		Payload: []byte(`{"hello":"world"}`),
 	}
 
-	data, err := EncodePacket(origin)
+	data, err := protocol.EncodePacket(origin)
 	if err != nil {
 		t.Fatalf("encode failed: %v", err)
 	}
 
-	got, err := DecodePacket(bytes.NewReader(data))
+	got, err := protocol.DecodePacket(bytes.NewReader(data))
 	if err != nil {
 		t.Fatalf("decode failed: %v", err)
 	}
@@ -31,11 +33,11 @@ func TestEncodeDecodePacket(t *testing.T) {
 }
 
 func TestEncodePacketPayloadTooLarge(t *testing.T) {
-	_, err := EncodePacket(Packet{
+	_, err := protocol.EncodePacket(protocol.Packet{
 		MsgID:   1,
-		Payload: make([]byte, MaxPayload+1),
+		Payload: make([]byte, protocol.MaxPayload+1),
 	})
-	if !errors.Is(err, ErrPayloadTooLarge) {
+	if !errors.Is(err, protocol.ErrPayloadTooLarge) {
 		t.Fatalf("unexpected err: %v", err)
 	}
 }
